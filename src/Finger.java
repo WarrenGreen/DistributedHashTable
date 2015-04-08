@@ -8,6 +8,11 @@ public class Finger {
 		
 	}
 	
+	public Finger(int start, int[] interval) {
+		this.start = start;
+		this.interval = interval;
+	}
+	
 	public Finger(int start, int[] interval, int successor) {
 		this.start = start;
 		this.interval = interval;

@@ -39,40 +39,44 @@ public class Manager {
 	public void start() {
 		addFirst();
 		
-		System.out.println("test1: " + nodes[0].findSuccessor(0));
+		System.out.println("test1: " + nodes[0].findSuccessor(0, 0));
 		System.out.println("test2: " + nodes[0].getSuccessor(0));
 		System.out.println("test3: " + nodes[0].closestPrecedingFinger(0, 0));
 		System.out.println("test4: " + nodes[0].findPredecessor(0, 0));
 		Scanner in = new Scanner(System.in);
 		String input;
 		while((input = in.nextLine()).compareTo("exit") != 0) {
-			if(input.compareTo("show all") == 0) {
+			if(input.compareTo("show all") == 0) { //Show all
 				
 				continue;
 			}
 			
 			String[] pInput = input.split(" ");
 			int p = Integer.parseInt(pInput[1]);
-			if(input.startsWith("join ")) {
+			if(input.startsWith("join ")) { //Join
 				if(nodes[p] != null)
 					continue;
 				
-				nodes[p] = new Node(p, 0, this);
+				nodes[p] = new Node(p, p-1, this);
 				threads[p] = new Thread(nodes[p]);
 				threads[p].start();
-			} else if(input.startsWith("find ")) {
+			} else if(input.startsWith("find ")) { //Find
 				if(nodes[p] == null) //p is not an active node
 					continue;
 				
 				int k = Integer.parseInt(pInput[2]);
 				
 				
-			} else if(input.startsWith("leave ")) {
+			} else if(input.startsWith("leave ")) { //Leave
 				if(nodes[p] == null) //p is not an active node
 					continue;
-			} else if(input.startsWith("show ")) {
+			} else if(input.startsWith("show ")) { //Show
 				if(nodes[p] == null) //p is not an active node
 					continue;
+				
+				Node n = nodes[p];
+				for(Finger f: n.fingers)
+					System.out.println(f.getStart()+", " +f.getSuccessor());
 			} else {
 				System.out.println("Invalid Command.");
 			}
