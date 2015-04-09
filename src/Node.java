@@ -186,7 +186,7 @@ public class Node implements Runnable {
 		if (n == myId) {
 			for (int i = Node.FINGER_LENGTH - 1; i >= 0; i--) {
 				int s = fingers.get(i).getSuccessor();
-				if (inBetween(new int[] {n + 1, id}, s))
+				if (inBetweenBP(new int[] {n, id}, s))
 					return fingers.get(i).getSuccessor();
 			}
 		} else {
@@ -214,7 +214,7 @@ public class Node implements Runnable {
 	public void updateOthers(int n) {
 		if(n == myId) {
 			for(int i=0;i<Node.FINGER_LENGTH; i++) {
-				int pPrime = (int) (n - Math.pow(2, i));
+				int pPrime = Math.abs((int) (n - Math.pow(2, i) % Math.pow(2, Node.FINGER_LENGTH)));
 				int p = findPredecessor(n, pPrime);
 				updateFingers(p, n, i);
 			}
@@ -241,7 +241,8 @@ public class Node implements Runnable {
 		if( n == myId) {
 			if(inBetweenBP(new int[]{n, fingers.get(i).getSuccessor()}, s)) {
 				fingers.get(i).setSuccessor(s);
-				updateFingers(pred, s, i);
+				int p = findPredecessor(myId, myId);
+				updateFingers(p, s, i);
 			}
 		} else {
 			try {
@@ -342,12 +343,16 @@ public class Node implements Runnable {
 		if (interval[0] < interval[1]) {
 			start = interval[0];
 			end = interval[1];
+			return (start < id && id < end);
 		} else {
-			start = interval[1];
-			end = interval[0];
+			start = interval[0];
+			end = interval[1];
+			
+			return (start < id && id <= Math.pow(2,FINGER_LENGTH)) || 
+					(0 <= id && id < end);
 		}
 
-		return (start < id && id < end);
+		
 
 	}
 	
@@ -362,15 +367,14 @@ public class Node implements Runnable {
 		if (interval[0] < interval[1]) {
 			start = interval[0];
 			end = interval[1];
-		} else {
-			start = interval[1];
-			end = interval[0];
-		}
-		
-		if(start == end && id == start)
-			return true;
-
 			return (start <= id && id < end);
+		} else {
+			start = interval[0];
+			end = interval[1];
+			
+			return (start <= id && id <= Math.pow(2,FINGER_LENGTH)) || 
+					(0 <= id && id < end);
+		}
 
 	}
 	
@@ -385,15 +389,13 @@ public class Node implements Runnable {
 		if (interval[0] < interval[1]) {
 			start = interval[0];
 			end = interval[1];
+			return (start < id && id <= end);
 		} else {
 			start = interval[1];
 			end = interval[0];
+			return (start < id && id <= Math.pow(2,FINGER_LENGTH)) || 
+					(0 <= id && id <= end);
 		}
-
-		if(start == end && id == start)
-			return true;
-		
-		return (start < id && id <= end);
 
 	}
 	
@@ -402,15 +404,15 @@ public class Node implements Runnable {
 		if (interval[0] < interval[1]) {
 			start = interval[0];
 			end = interval[1];
+			return (start <= id && id <= end);
 		} else {
 			start = interval[1];
 			end = interval[0];
+			
+			return (start <= id && id <= Math.pow(2,FINGER_LENGTH)) || 
+					(0 <= id && id <= end);
 		}
 
-		if(start == end && id == start)
-			return true;
-		
-		return (start <= id && id <= end);
 
 	}
 
