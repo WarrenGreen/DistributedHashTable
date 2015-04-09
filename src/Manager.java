@@ -39,10 +39,6 @@ public class Manager {
 	public void start() {
 		addFirst();
 		
-		System.out.println("test1: " + nodes[0].findSuccessor(0, 0));
-		System.out.println("test2: " + nodes[0].getSuccessor(0));
-		System.out.println("test3: " + nodes[0].closestPrecedingFinger(0, 0));
-		System.out.println("test4: " + nodes[0].findPredecessor(0, 0));
 		Scanner in = new Scanner(System.in);
 		String input;
 		while((input = in.nextLine()).compareTo("exit") != 0) {

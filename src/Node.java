@@ -46,7 +46,7 @@ public class Node implements Runnable {
 			fingers.add(f);
 		}
 
-		pred = 0;
+		pred = -1;
 
 		this.mngr = mngr;
 		// queue = new LinkedBlockingQueue<Message>();
@@ -76,7 +76,7 @@ public class Node implements Runnable {
 		bind(mngr.getNodeAddress(myId));
 		
 		initFingers(nPrime);
-		//updateOthers(myId);
+		updateOthers(myId);
 		
 	}
 
@@ -122,9 +122,9 @@ public class Node implements Runnable {
 	}
 
 	public void initFingers(int nPrime) {
-		fingers.get(0).setSuccessor(findSuccessor(nPrime, fingers.get(0).getStart()));
+		fingers.get(0).setSuccessor(findSuccessor(nPrime, myId));
 		pred = getPredecessor(fingers.get(0).getSuccessor());
-		this.setPredecessor(nPrime, myId);
+		this.setPredecessor(myId, findPredecessor(getSuccessor(myId), getSuccessor(myId)));
 		
 		for(int i=0;i<Node.FINGER_LENGTH-1; i++) {
 			if(inBetweenBP(new int[]{myId, fingers.get(i).getSuccessor()}, fingers.get(i+1).getStart())) {
@@ -137,6 +137,9 @@ public class Node implements Runnable {
 
 	public int findSuccessor(int n, int id) {
 		if( n == myId) {
+			if(inBetweenPB(new int[]{n, getSuccessor(n)}, id))
+				return getSuccessor(n);
+			
 			int nPrime = findPredecessor(n, id);
 			return getSuccessor(nPrime);
 		} else {
@@ -182,8 +185,8 @@ public class Node implements Runnable {
 	public int closestPrecedingFinger(int n, int id) {
 		if (n == myId) {
 			for (int i = Node.FINGER_LENGTH - 1; i >= 0; i--) {
-				if (inBetween(new int[] {n + 1, id}, fingers.get(i)
-						.getSuccessor()))
+				int s = fingers.get(i).getSuccessor();
+				if (inBetween(new int[] {n + 1, id}, s))
 					return fingers.get(i).getSuccessor();
 			}
 		} else {
