@@ -321,7 +321,7 @@ public class Node implements Runnable {
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					sock.getInputStream()));
 
-			Message msg = new Message(Message.GET_PREDECESSOR, n, id);
+			Message msg = new Message(Message.SET_PREDECESSOR, n, id);
 			out.println(msg.toString());
 
 			sock.close();
