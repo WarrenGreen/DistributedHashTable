@@ -343,6 +343,8 @@ public class Node implements Runnable {
 	 */
 	private boolean inBetween(int[] interval, int id) {
 		if(interval[0] == interval[1]) return true;
+		if(interval[0] > interval[1])
+			return (interval[0] < id || id < interval[1]);
 		return (interval[0] < id && id < interval[1]);
 		
 	}
@@ -355,6 +357,8 @@ public class Node implements Runnable {
 	 */
 	private boolean inBetweenBP(int[] interval, int id) {
 		if(interval[0] == interval[1]) return true;
+		if(interval[0] > interval[1])
+			return (interval[0] <= id || id < interval[1]);
 		return (interval[0] <= id && id < interval[1]);
 
 	}
@@ -367,12 +371,16 @@ public class Node implements Runnable {
 	 */
 	private boolean inBetweenPB(int[] interval, int id) {
 		if(interval[0] == interval[1]) return true;
+		if(interval[0] > interval[1])
+			return (interval[0] < id || id <= interval[1]);
 		return (interval[0] < id && id <= interval[1]);
 
 	}
 	
 	private boolean inBetweenBB(int[] interval, int id) {
 		if(interval[0] == interval[1]) return true;
+		if(interval[0] > interval[1])
+			return (interval[0] <= id || id <= interval[1]);
 		return (interval[0] <= id && id <= interval[1]);
 
 
