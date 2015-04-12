@@ -191,7 +191,7 @@ public class Node implements Runnable {
 		if (n == myId) {
 			for (int i = Node.FINGER_LENGTH - 1; i >= 0; i--) {
 				int s = fingers.get(i).getSuccessor();
-				if (inBetween(new int[] {n, id}, s))
+				if (inBetweenBP(new int[] {n, id}, s) && s!= id)
 					return fingers.get(i).getSuccessor();
 			}
 		} else {
@@ -221,7 +221,7 @@ public class Node implements Runnable {
 			for(int i=0;i<Node.FINGER_LENGTH; i++) {
 				int pPrime = Math.abs((int) (n - Math.pow(2, i)));// % Math.pow(2, Node.FINGER_LENGTH)));
 				int p = findPredecessor(n, pPrime);
-				if(p == myId) continue;
+				//if(p == myId) continue;
 				updateFingers(p, n, i);
 			}
 		} else {
@@ -248,7 +248,8 @@ public class Node implements Runnable {
 			if(inBetweenBP(new int[]{n, fingers.get(i).getSuccessor()}, s)) {
 				fingers.get(i).setSuccessor(s);
 				int p = findPredecessor(myId, myId);
-				updateFingers(p, s, i);
+				if(p != s)
+					updateFingers(p, s, i);
 			}
 		} else {
 			try {
@@ -346,7 +347,6 @@ public class Node implements Runnable {
 	 * @return
 	 */
 	private boolean inBetween(int[] interval, int id) {
-		if(interval[0] == interval[1]) return true;
 		if(interval[0] > interval[1])
 			return (interval[0] < id || id < interval[1]);
 		return (interval[0] < id && id < interval[1]);
@@ -360,8 +360,8 @@ public class Node implements Runnable {
 	 * @return
 	 */
 	private boolean inBetweenBP(int[] interval, int id) {
-		if(interval[0] == interval[1]) return true;
-		if(interval[0] > interval[1])
+		//if(interval[0] == interval[1]) return true;
+		if(interval[0] >= interval[1])
 			return (interval[0] <= id || id < interval[1]);
 		return (interval[0] <= id && id < interval[1]);
 
@@ -374,15 +374,15 @@ public class Node implements Runnable {
 	 * @return
 	 */
 	private boolean inBetweenPB(int[] interval, int id) {
-		if(interval[0] == interval[1]) return true;
-		if(interval[0] > interval[1])
+		//if(interval[0] == interval[1]) return true;
+		if(interval[0] >= interval[1])
 			return (interval[0] < id || id <= interval[1]);
 		return (interval[0] < id && id <= interval[1]);
 
 	}
 	
 	private boolean inBetweenBB(int[] interval, int id) {
-		if(interval[0] == interval[1]) return true;
+		//if(interval[0] == interval[1]) return true;
 		if(interval[0] > interval[1])
 			return (interval[0] <= id || id <= interval[1]);
 		return (interval[0] <= id && id <= interval[1]);
