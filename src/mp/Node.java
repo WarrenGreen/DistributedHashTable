@@ -128,7 +128,10 @@ public class Node implements Runnable {
 		setPredecessor(pred, myId);
 		
 		for(int i=0;i<Node.FINGER_LENGTH-1; i++) {
-			if(inBetweenBP(new int[]{myId, fingers.get(i).getSuccessor()}, fingers.get(i+1).getStart())) {
+			int a = myId;
+			int b = fingers.get(i).getSuccessor();
+			int c = fingers.get(i+1).getStart();
+			if(inBetweenBP(new int[]{a, b}, c)) {
 				fingers.get(i+1).setSuccessor(fingers.get(i).getSuccessor());
 			} else {
 				fingers.get(i+1).setSuccessor(findSuccessor(nPrime, fingers.get(i+1).getStart()));
@@ -216,8 +219,9 @@ public class Node implements Runnable {
 	public void updateOthers(int n) {
 		if(n == myId) {
 			for(int i=0;i<Node.FINGER_LENGTH; i++) {
-				int pPrime = Math.abs((int) (n - Math.pow(2, i) % Math.pow(2, Node.FINGER_LENGTH)));
+				int pPrime = Math.abs((int) (n - Math.pow(2, i)));// % Math.pow(2, Node.FINGER_LENGTH)));
 				int p = findPredecessor(n, pPrime);
+				if(p == myId) continue;
 				updateFingers(p, n, i);
 			}
 		} else {

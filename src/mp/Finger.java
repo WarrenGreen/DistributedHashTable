@@ -55,5 +55,9 @@ public class Finger {
 	public void setInterval(int[] interval) {
 		this.interval = interval;
 	}
+	
+	public String getString() {
+		return start+ ": " + successor;
+	}
 
 }
