@@ -1,4 +1,4 @@
-package src;
+package mp;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -168,7 +168,8 @@ public class Node implements Runnable {
 
 	public int findPredecessor(int n, int id) {
 		int nPrime = n;
-		while(!inBetweenPB(new int[]{nPrime, getSuccessor(nPrime)}, id)) {
+		int succ = getSuccessor(nPrime);
+		while(!inBetweenPB(new int[]{nPrime, succ}, id)) {
 			nPrime = closestPrecedingFinger(nPrime, id);
 		}
 		
@@ -187,7 +188,7 @@ public class Node implements Runnable {
 		if (n == myId) {
 			for (int i = Node.FINGER_LENGTH - 1; i >= 0; i--) {
 				int s = fingers.get(i).getSuccessor();
-				if (inBetweenBP(new int[] {n, id}, s))
+				if (inBetween(new int[] {n, id}, s))
 					return fingers.get(i).getSuccessor();
 			}
 		} else {
