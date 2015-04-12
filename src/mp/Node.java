@@ -162,8 +162,10 @@ public class Node implements Runnable {
 			if(inBetweenPB(new int[]{n, getSuccessor(n)}, id))
 				return getSuccessor(n);
 			
-			int nPrime = findPredecessor(n, id);
-			return getSuccessor(nPrime);
+			if(n==id)
+				return n;
+						
+			return findSuccessor(getSuccessor(n), id);
 		} else {
 			try {
 				Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(n));
@@ -171,7 +173,7 @@ public class Node implements Runnable {
 				BufferedReader in = new BufferedReader(new InputStreamReader(
 						sock.getInputStream()));
 
-				Message msg = new Message(Message.FIND_SUCCESSOR, id);
+				Message msg = new Message(Message.FIND_SUCCESSOR, n, id);
 				out.println(msg.toString());
 
 				String resp = in.readLine();
@@ -356,7 +358,8 @@ public class Node implements Runnable {
 			return pred;
 		
 		try {
-			Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(n));
+			int p = mngr.getNodeAddress(n);
+			Socket sock = new Socket(Manager.HOST, p);
 			PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					sock.getInputStream()));
