@@ -56,7 +56,7 @@ public class Finger {
 		this.interval = interval;
 	}
 	
-	public String getString() {
+	public String toString() {
 		return start+ ": " + successor;
 	}
 

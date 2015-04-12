@@ -26,7 +26,7 @@ public class Manager {
 		List<Integer> keys = new ArrayList<Integer>();
 		for(int i=0;i<256;i++)
 			keys.add(i);
-		Node n0 = new Node(0, this);
+		Node n0 = new Node(0, this, Manager.PORT);
 		Thread t0 = new Thread(n0);
 		nodes[0] = n0;
 		threads[0] = t0;
@@ -34,6 +34,7 @@ public class Manager {
 	}
 	
 	public int getNodeAddress(int id) {
+		if(nodes[id] == null) return -1;
 		return PORT + id;
 	}
 	
@@ -54,7 +55,7 @@ public class Manager {
 				if(nodes[p] != null)
 					continue;
 				
-				nodes[p] = new Node(p, 0, this);
+				nodes[p] = new Node(p, 0, this, Manager.PORT + p);
 				threads[p] = new Thread(nodes[p]);
 				threads[p].start();
 			} else if(input.startsWith("find ")) { //Find

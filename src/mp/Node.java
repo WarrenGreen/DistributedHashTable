@@ -20,7 +20,7 @@ public class Node implements Runnable {
 	private AtomicBoolean running;
 	private Manager mngr;
 
-	private static final int FINGER_LENGTH = 3;
+	private static final int FINGER_LENGTH = 4;
 
 	private ServerSocket serverSocket;
 
@@ -30,7 +30,7 @@ public class Node implements Runnable {
 	 * @param id
 	 * @param keys
 	 */
-	public Node(int id, Manager mngr) {
+	public Node(int id, Manager mngr, int port) {
 		this.myId = id;
 		this.keys = new ArrayList<Integer>();
 		for (int i = 0; i < 256; i++)
@@ -53,10 +53,10 @@ public class Node implements Runnable {
 		// queue = new LinkedBlockingQueue<Message>();
 		running = new AtomicBoolean();
 		running.set(true);
-		bind(mngr.getNodeAddress(myId));
+		bind(port);
 	}
 
-	public Node(int id, int nPrime, Manager mngr) {
+	public Node(int id, int nPrime, Manager mngr, int port) {
 		this.myId = id;
 
 		fingers = new ArrayList<Finger>();
@@ -74,7 +74,7 @@ public class Node implements Runnable {
 		running = new AtomicBoolean();
 		running.set(true);
 
-		bind(mngr.getNodeAddress(myId));
+		bind(port);
 		
 		initFingers(nPrime);
 		updateOthers(myId);
@@ -112,8 +112,16 @@ public class Node implements Runnable {
 				} else if(msg.getType() == Message.UPDATE_OTHERS) {
 					//updateOthers(msg.getN());
 				}else if(msg.getType() == Message.UPDATE_SUCCESSOR) {
-					if(msg.getN() == myId)
+					if(msg.getN() == myId && msg.getN() != msg.getId()){
 						pred = msg.getId();
+						for(int i=0;i<Node.FINGER_LENGTH;i++) {
+							if(inBetweenPB(new int[]{fingers.get(i).getSuccessor(), msg.getId()}, fingers.get(i).getStart())){
+								fingers.get(i).setSuccessor(msg.getId());
+							}
+							updateSuccessor(fingers.get(i).getStart(), msg.getId());
+							
+						}
+					}
 				}else if(msg.getType() == Message.UPDATE_PREDECESSOR) {
 					if(msg.getN() == myId){
 						for(int i=0;i<Node.FINGER_LENGTH;i++) {
@@ -135,7 +143,7 @@ public class Node implements Runnable {
 	public void initFingers(int nPrime) {
 		fingers.get(0).setSuccessor(findSuccessor(nPrime, fingers.get(0).getStart()));
 		pred = getPredecessor(fingers.get(0).getSuccessor());
-		setPredecessor(pred, myId);
+		//setPredecessor(pred, myId);
 		
 		for(int i=0;i<Node.FINGER_LENGTH-1; i++) {
 			int a = myId;
@@ -257,6 +265,9 @@ public class Node implements Runnable {
 	
 	public void updateSuccessor(int n, int id) {
 		try {
+				int addr;
+				
+				if((addr = mngr.getNodeAddress(n)) == -1) return;
 				Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(n));
 				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(
