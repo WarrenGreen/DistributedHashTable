@@ -1,4 +1,4 @@
-package src;
+package mp;
 
 public class Finger {
 	private int start;
