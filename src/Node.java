@@ -339,21 +339,9 @@ public class Node implements Runnable {
 	 * @return
 	 */
 	private boolean inBetween(int[] interval, int id) {
-		int start, end;
-		if (interval[0] < interval[1]) {
-			start = interval[0];
-			end = interval[1];
-			return (start < id && id < end);
-		} else {
-			start = interval[0];
-			end = interval[1];
-			
-			return (start < id && id <= Math.pow(2,FINGER_LENGTH)) || 
-					(0 <= id && id < end);
-		}
-
 		
-
+		return (interval[0] < id && id < interval[1]);
+		
 	}
 	
 	/**
@@ -363,18 +351,7 @@ public class Node implements Runnable {
 	 * @return
 	 */
 	private boolean inBetweenBP(int[] interval, int id) {
-		int start, end;
-		if (interval[0] < interval[1]) {
-			start = interval[0];
-			end = interval[1];
-			return (start <= id && id < end);
-		} else {
-			start = interval[0];
-			end = interval[1];
-			
-			return (start <= id && id <= Math.pow(2,FINGER_LENGTH)) || 
-					(0 <= id && id < end);
-		}
+		return (interval[0] <= id && id < interval[1]);
 
 	}
 	
@@ -385,33 +362,12 @@ public class Node implements Runnable {
 	 * @return
 	 */
 	private boolean inBetweenPB(int[] interval, int id) {
-		int start, end;
-		if (interval[0] < interval[1]) {
-			start = interval[0];
-			end = interval[1];
-			return (start < id && id <= end);
-		} else {
-			start = interval[1];
-			end = interval[0];
-			return (start < id && id <= Math.pow(2,FINGER_LENGTH)) || 
-					(0 <= id && id <= end);
-		}
+		return (interval[0] < id && id <= interval[1]);
 
 	}
 	
 	private boolean inBetweenBB(int[] interval, int id) {
-		int start, end;
-		if (interval[0] < interval[1]) {
-			start = interval[0];
-			end = interval[1];
-			return (start <= id && id <= end);
-		} else {
-			start = interval[1];
-			end = interval[0];
-			
-			return (start <= id && id <= Math.pow(2,FINGER_LENGTH)) || 
-					(0 <= id && id <= end);
-		}
+		return (interval[0] <= id && id <= interval[1]);
 
 
 	}
