@@ -11,6 +11,8 @@ public class Message {
 	public static final int CLOSEST_PRECEDING = 4;
 	public static final int UPDATE_OTHERS = 5;
 	public static final int UPDATE_FINGERS = 6;
+	public static final int UPDATE_SUCCESSOR = 7;
+	public static final int UPDATE_PREDECESSOR = 8;
 	
 	private int type;
 	private int id;
