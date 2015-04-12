@@ -47,7 +47,7 @@ public class Node implements Runnable {
 			fingers.add(f);
 		}
 
-		pred = -1;
+		pred = 0;
 
 		this.mngr = mngr;
 		// queue = new LinkedBlockingQueue<Message>();
@@ -123,9 +123,9 @@ public class Node implements Runnable {
 	}
 
 	public void initFingers(int nPrime) {
-		fingers.get(0).setSuccessor(findSuccessor(nPrime, myId));
+		fingers.get(0).setSuccessor(findSuccessor(nPrime, fingers.get(0).getStart()));
 		pred = getPredecessor(fingers.get(0).getSuccessor());
-		this.setPredecessor(myId, findPredecessor(getSuccessor(myId), getSuccessor(myId)));
+		setPredecessor(pred, myId);
 		
 		for(int i=0;i<Node.FINGER_LENGTH-1; i++) {
 			if(inBetweenBP(new int[]{myId, fingers.get(i).getSuccessor()}, fingers.get(i+1).getStart())) {
@@ -315,20 +315,21 @@ public class Node implements Runnable {
 	public void setPredecessor(int n, int id) {
 		if(n == myId)
 			pred = id;
-		
-		try {
-			Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(n));
-			PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					sock.getInputStream()));
+		else {
+			try {
+				Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(n));
+				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
+				BufferedReader in = new BufferedReader(new InputStreamReader(
+						sock.getInputStream()));
 
-			Message msg = new Message(Message.SET_PREDECESSOR, n, id);
-			out.println(msg.toString());
+				Message msg = new Message(Message.SET_PREDECESSOR, n, id);
+				out.println(msg.toString());
 
-			sock.close();
+				sock.close();
 
-		} catch (IOException e) {
-			e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		
 	}
@@ -340,7 +341,7 @@ public class Node implements Runnable {
 	 * @return
 	 */
 	private boolean inBetween(int[] interval, int id) {
-		
+		if(interval[0] == interval[1]) return true;
 		return (interval[0] < id && id < interval[1]);
 		
 	}
@@ -352,6 +353,7 @@ public class Node implements Runnable {
 	 * @return
 	 */
 	private boolean inBetweenBP(int[] interval, int id) {
+		if(interval[0] == interval[1]) return true;
 		return (interval[0] <= id && id < interval[1]);
 
 	}
@@ -363,11 +365,13 @@ public class Node implements Runnable {
 	 * @return
 	 */
 	private boolean inBetweenPB(int[] interval, int id) {
+		if(interval[0] == interval[1]) return true;
 		return (interval[0] < id && id <= interval[1]);
 
 	}
 	
 	private boolean inBetweenBB(int[] interval, int id) {
+		if(interval[0] == interval[1]) return true;
 		return (interval[0] <= id && id <= interval[1]);
 
 

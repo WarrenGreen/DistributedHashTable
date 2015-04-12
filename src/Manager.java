@@ -54,7 +54,7 @@ public class Manager {
 				if(nodes[p] != null)
 					continue;
 				
-				nodes[p] = new Node(p, p-1, this);
+				nodes[p] = new Node(p, 0, this);
 				threads[p] = new Thread(nodes[p]);
 				threads[p].start();
 			} else if(input.startsWith("find ")) { //Find
