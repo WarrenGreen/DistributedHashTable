@@ -125,7 +125,7 @@ public class Node implements Runnable {
 				}else if(msg.getType() == Message.UPDATE_PREDECESSOR) {
 					if(msg.getN() == myId){
 						for(int i=0;i<Node.FINGER_LENGTH;i++) {
-							if(inBetweenPB(new int[]{myId, msg.getId()}, fingers.get(i).getStart())){
+							if(inBetweenPB(new int[]{myId, msg.getN()}, fingers.get(i).getStart())){
 								fingers.get(i).setSuccessor(msg.getId());
 							}
 						}
