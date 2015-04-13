@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Manager {
-	private static final int PORT = 8000;
+	private static final int PORT = 7000;
 	public static final String HOST = "127.0.0.1";
 	public static final String STOP = "STOP";
 	
