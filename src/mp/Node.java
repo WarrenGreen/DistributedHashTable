@@ -68,6 +68,7 @@ public class Node implements Runnable {
 			Finger f = new Finger(start, new int[] { start, nStart });
 			fingers.add(f);
 		}
+		
 		pred = -1;
 
 		this.mngr = mngr;
@@ -113,7 +114,7 @@ public class Node implements Runnable {
 					//updateOthers(msg.getN());
 				}else if(msg.getType() == Message.UPDATE_SUCCESSOR) {
 					if(msg.getN() == myId && msg.getN() != msg.getId()){
-						pred = msg.getId();
+						//pred = msg.getId();
 						for(int i=0;i<Node.FINGER_LENGTH;i++) {
 							if(inBetweenPB(new int[]{fingers.get(i).getSuccessor(), msg.getId()}, fingers.get(i).getStart())){
 								fingers.get(i).setSuccessor(msg.getId());
@@ -122,15 +123,17 @@ public class Node implements Runnable {
 							
 						}
 					}
-				}else if(msg.getType() == Message.UPDATE_PREDECESSOR) {
-					if(msg.getN() == myId){
-						for(int i=0;i<Node.FINGER_LENGTH;i++) {
-							if(inBetweenPB(new int[]{myId, msg.getN()}, fingers.get(i).getStart())){
-								fingers.get(i).setSuccessor(msg.getId());
-							}
-						}
-					}
 				}
+//				else if(msg.getType() == Message.UPDATE_PREDECESSOR) {
+//					if(msg.getN() == myId){
+//						for(int i=0;i<Node.FINGER_LENGTH;i++) {
+//							if(inBetweenPB(new int[]{myId, msg.getId()}, fingers.get(i).getStart())){
+//								fingers.get(i).setSuccessor(msg.getId());
+//							}
+//						}
+//					}
+//					pred = findPredecessor(msg.getId(), msg.getN());
+//				}
 				clientSocket.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -143,7 +146,8 @@ public class Node implements Runnable {
 	public void initFingers(int nPrime) {
 		fingers.get(0).setSuccessor(findSuccessor(nPrime, fingers.get(0).getStart()));
 		pred = getPredecessor(fingers.get(0).getSuccessor());
-		//setPredecessor(pred, myId);
+		setPredecessor(fingers.get(0).getSuccessor(), myId);
+		
 		
 		for(int i=0;i<Node.FINGER_LENGTH-1; i++) {
 			int a = myId;
@@ -239,7 +243,7 @@ public class Node implements Runnable {
 	public void updateOthers(int n) {
 		if(n == myId) {
 			updateSuccessor(getSuccessor(n), n);
-			updatePredecessor(pred, n);
+			//updatePredecessor(pred, n);
 			/*for(int i=0;i<Node.FINGER_LENGTH; i++) {
 				//int pPrime = Math.abs((int) (n - Math.pow(2, i)));// % Math.pow(2, Node.FINGER_LENGTH)));
 				//int p = findPredecessor(n, pPrime);
