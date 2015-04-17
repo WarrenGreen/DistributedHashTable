@@ -114,7 +114,6 @@ public class Node implements Runnable {
 					//updateOthers(msg.getN());
 				}else if(msg.getType() == Message.UPDATE_SUCCESSOR) {
 					if(msg.getN() == myId && msg.getN() != msg.getId()){
-						//pred = msg.getId();
 						for(int i=0;i<Node.FINGER_LENGTH;i++) {
 							if(inBetweenBB(new int[]{fingers.get(i).getStart(), fingers.get(i).getSuccessor()}, msg.getId())){
 								fingers.get(i).setSuccessor(msg.getId());
@@ -122,6 +121,7 @@ public class Node implements Runnable {
 							updateSuccessor(fingers.get(i).getStart(), msg.getId());
 							
 						}
+						updateSuccessor(fingers.get(0).getSuccessor(), msg.getId());
 					}
 				}
 				else if(msg.getType() == Message.UPDATE_PREDECESSOR) {
