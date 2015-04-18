@@ -50,7 +50,9 @@ public class Manager {
 			}
 			
 			String[] pInput = input.split(" ");
-			int p = Integer.parseInt(pInput[1]);
+			int p = 0;
+			if(pInput.length != 1)
+				p = Integer.parseInt(pInput[1]);
 			if(p > 255) {
 				p = (int)(p % Math.pow(2, nodes[0].fingerLength()));
 			}
@@ -82,7 +84,17 @@ public class Manager {
 				
 				System.out.println("Keys: " + n.sendKeys());
 				System.out.println("pred: " + n.getPredecessor(p));
-			} else {
+			} 
+			else if(input.startsWith("show-all")) {
+				for(Node n : nodes) {
+					if(n != null) {
+						System.out.print("Node: " + n.getId());
+						System.out.println(" Keys: " + n.sendKeys());
+					}
+				}
+			}
+				
+			else {
 				System.out.println("Invalid Command.");
 			}
 		}
