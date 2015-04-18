@@ -18,7 +18,7 @@ public class Node implements Runnable {
 	private int myId;
 	public List<Finger> fingers;
 	public int pred; // predecessor
-	private List<Integer> keys;
+	public List<Integer> keys;
 	private AtomicBoolean running;
 	private Manager mngr;
 	private Socket clientSocket;
@@ -145,6 +145,10 @@ public class Node implements Runnable {
 						if(pred == msg.getId())
 							pred = findPredecessor(getSuccessor(msg.getNPrime()), msg.getN());
 						
+						for(int i = 0; inBetweenPB(new int[]{myId, msg.getId()}, i); i++) {
+							this.keys.add(i);
+						}
+						
 					}
 				}else if(msg.getType() == Message.MOVE_KEY) {
 					if(msg.getN() == myId) {
@@ -160,6 +164,18 @@ public class Node implements Runnable {
 						out.println(keysToSend);
 					}
 				}
+				else if(msg.getType() == Message.MOVE_KEY_DELETE) {
+//					String[] k = msg.getKey().split(" ");
+//					System.out.println(msg.getKey());
+//					System.out.println("Successor: " + myId);
+//					System.out.println(k.length);
+//					for(int i = 0; i < k.length; i++) {
+//						System.out.println(k[i]);
+//						this.keys.add(Integer.parseInt(k[i]));
+//					}
+					if(msg.getKey() != null)
+						this.keys.addAll(msg.getKey());
+				}
 
 				clientSocket.close();
 			} catch (IOException e) {
@@ -170,28 +186,29 @@ public class Node implements Runnable {
 	}
 	
 	public void moveKeys(int predecessor, int id) {
-		try {
-			Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(predecessor));
-			PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					sock.getInputStream()));
-
-			Message msg = new Message(Message.MOVE_KEY, predecessor, id);
-			out.println(msg.toString());
-
-			String resp = in.readLine();
-			String[] keyString = resp.split(" ");
-//			if(!isParsable(keyString[0])) {
-//				moveKeys(0, id);
-//			}
-			if(isParsable(keyString[0])){
-				for(String k : keyString)
-					this.keys.add(Integer.valueOf(k));
-			}
-			else{
-				moveKeys(findSuccessor(id, fingers.get(0).getStart()), id);
-			}
-			sock.close();
+		if(predecessor != myId)
+			try {
+				Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(predecessor));
+				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
+				BufferedReader in = new BufferedReader(new InputStreamReader(
+						sock.getInputStream()));
+	
+				Message msg = new Message(Message.MOVE_KEY, predecessor, id);
+				out.println(msg.toString());
+	
+				String resp = in.readLine();
+				String[] keyString = resp.split(" ");
+	//			if(!isParsable(keyString[0])) {
+	//				moveKeys(0, id);
+	//			}
+				if(isParsable(keyString[0])){
+					for(String k : keyString)
+						this.keys.add(Integer.valueOf(k));
+				}
+				else{
+					moveKeys(findSuccessor(id, fingers.get(0).getStart()), id);
+				}
+				sock.close();
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -341,9 +358,9 @@ public class Node implements Runnable {
 
 	public void removeNode(int n, int id, int nPrime) {
 		if (n != myId) {
+			moveKeysDelete(id, nPrime);
 			try {
 				int addr;
-				
 				if((addr = mngr.getNodeAddress(n)) == -1) return;
 				Socket sock = new Socket(Manager.HOST, addr);
 				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
@@ -357,6 +374,28 @@ public class Node implements Runnable {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public void moveKeysDelete(int id, int successor) {
+			try {
+				Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(successor));
+				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
+				BufferedReader in = new BufferedReader(new InputStreamReader(
+						sock.getInputStream()));
+				
+				String keyString = "";
+				for(int i = 0; i < this.keys.size(); i++) {
+					keyString += this.keys.get(i) + " ";
+				}
+				Message msg = new Message(Message.MOVE_KEY_DELETE, successor, id, 0, this.keys);
+				out.println(msg);
+
+				sock.close();
+	
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 	}
 
 	public void updateFingers(int n, int s, int i) {

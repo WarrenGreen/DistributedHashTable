@@ -102,28 +102,29 @@ public class Manager {
 					continue;
 				
 				Node temp = nodes[p];
-				nodes[p] = null;
 				
 				nodes[temp.fingers.get(0).getSuccessor()].pred = temp.pred; //Update successor predecessor
 				
 				for(int i =nodes.length-1; i>=0;i--) {
 					if(nodes[i] != null && containsNode(nodes[i], p)) {
-						try {
-							System.out.println("remove from " + getNodeAddress(i));
-							Socket sock = new Socket(Manager.HOST, getNodeAddress(i));
-							PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
-
-							Message msg = new Message(Message.REMOVE_NODE, i, p, temp.fingers.get(0).getSuccessor());
-							out.println(msg.toString());
-
-							sock.close();
-
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
+						System.out.println(nodes[p]);
+						nodes[p].removeNode(i, p, temp.fingers.get(0).getSuccessor());
+//						try {
+//							System.out.println("remove from " + getNodeAddress(i));
+//							Socket sock = new Socket(Manager.HOST, getNodeAddress(i));
+//							PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
+//
+//							Message msg = new Message(Message.REMOVE_NODE, i, p, temp.fingers.get(0).getSuccessor());
+//							out.println(msg.toString());
+//
+//							sock.close();
+//
+//						} catch (IOException e) {
+//							e.printStackTrace();
+//						}
 					}
 				}
-				
+				nodes[p] = null;
 				temp.stop();
 				try {
 					threads[p].join();

@@ -13,11 +13,14 @@ public class Message {
 	public static final int UPDATE_SUCCESSOR = 7;
 	public static final int REMOVE_NODE = 8;
 	public static final int MOVE_KEY = 9;
+	public static final int MOVE_KEY_DELETE = 10;
 	
 	private int type;
 	private int id;
 	private int n;
 	private int nPrime = -1;
+	//private String[] keyString;
+	private List<Integer> keyString;
 	
 	private List<Integer> path;
 	
@@ -47,6 +50,14 @@ public class Message {
 		this.nPrime = nPrime;
 	}
 	
+	public Message(int type, int n, int id, int filler, List<Integer> keyString) {
+		this.type = type;
+		this.n = n;
+		this.id = id;
+		this.nPrime = filler;
+		this.keyString = keyString;
+	}
+	
 	private void parseInput(String input) {
 		String[] pInput = input.split(" ");
 		
@@ -57,6 +68,11 @@ public class Message {
 		if(pInput.length > 3) {
 			this.nPrime = Integer.parseInt(pInput[3]);
 		}
+		
+		if(pInput.length > 4) {
+			//this.keyString = pInput[4];
+		}
+		System.out.println("I AM HERE");
 	}
 	
 	public String toString() {
@@ -65,11 +81,19 @@ public class Message {
 		if(nPrime != -1)
 			out += " " + nPrime;
 		
+		if(keyString != null)
+			out += " " + keyString;
+		System.out.println("wut " + out);
+		System.out.println("Keystring: " + keyString);
 		return out;
 	}
 
 	public int getId() {
 		return id;
+	}
+	
+	public List<Integer> getKey() {
+		return keyString;
 	}
 
 	public void setId(int id) {
