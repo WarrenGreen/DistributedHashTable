@@ -82,7 +82,6 @@ public class Node implements Runnable {
 		initFingers(nPrime);
 		updateOthers(myId);
 		moveKeys(pred, myId);
-		//System.out.println(fingers.get(0).getSuccessor());
 	}
 
 	@Override
@@ -142,7 +141,7 @@ public class Node implements Runnable {
 						String keysToSend = "";
 						while(iter.hasNext()) {
 							int k = iter.next();
-							if(k > myId && k <= msg.getId()) {
+							if(inBetweenPB(new int[]{myId, msg.getId()}, k)) {//k > myId && k <= msg.getId()) {
 								keysToSend += k + " ";
 								iter.remove();
 							}
@@ -161,6 +160,7 @@ public class Node implements Runnable {
 	
 	public void moveKeys(int predecessor, int id) {
 		try {
+			System.out.println(findSuccessor(id, fingers.get(0).getStart()));
 			Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(predecessor));
 			PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -171,11 +171,15 @@ public class Node implements Runnable {
 
 			String resp = in.readLine();
 			String[] keyString = resp.split(" ");
-			if(!isParsable(keyString[0]))
-				moveKeys(0, myId);
-			else {
+//			if(!isParsable(keyString[0])) {
+//				moveKeys(0, id);
+//			}
+			if(isParsable(keyString[0])){
 				for(String k : keyString)
 					this.keys.add(Integer.valueOf(k));
+			}
+			else{
+				moveKeys(findSuccessor(id, fingers.get(0).getStart()), id);
 			}
 			sock.close();
 
