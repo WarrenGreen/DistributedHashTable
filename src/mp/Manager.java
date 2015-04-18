@@ -51,6 +51,9 @@ public class Manager {
 			
 			String[] pInput = input.split(" ");
 			int p = Integer.parseInt(pInput[1]);
+			if(p > 255) {
+				p = (int)(p % Math.pow(2, nodes[0].fingerLength()));
+			}
 			if(input.startsWith("join ")) { //Join
 				if(nodes[p] != null)
 					continue;
@@ -73,8 +76,11 @@ public class Manager {
 					continue;
 				
 				Node n = nodes[p];
-				for(Finger f: n.fingers)
+				for(Finger f: n.fingers) {
 					System.out.println(f.getStart()+", " +f.getSuccessor());
+				}
+				
+				System.out.println("Keys: " + n.sendKeys());
 				System.out.println("pred: " + n.getPredecessor(p));
 			} else {
 				System.out.println("Invalid Command.");

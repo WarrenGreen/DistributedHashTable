@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Iterator;
 
 public class Node implements Runnable {
 
@@ -58,6 +59,7 @@ public class Node implements Runnable {
 
 	public Node(int id, int nPrime, Manager mngr, int port) {
 		this.myId = id;
+		this.keys = new ArrayList<Integer>();
 
 		fingers = new ArrayList<Finger>();
 		for (int i = 1; i <= Node.FINGER_LENGTH; i++) {
@@ -79,7 +81,8 @@ public class Node implements Runnable {
 		
 		initFingers(nPrime);
 		updateOthers(myId);
-		
+		moveKeys(pred, myId);
+		//System.out.println(fingers.get(0).getSuccessor());
 	}
 
 	@Override
@@ -133,6 +136,20 @@ public class Node implements Runnable {
 						}
 					}
 				}
+				else if(msg.getType() == Message.MOVE_KEY) {
+					if(msg.getN() == myId) {
+						Iterator<Integer> iter = this.keys.iterator();
+						String keysToSend = "";
+						while(iter.hasNext()) {
+							int k = iter.next();
+							if(k > myId && k <= msg.getId()) {
+								keysToSend += k + " ";
+								iter.remove();
+							}
+						}
+						out.println(keysToSend);
+					}
+				}
 				clientSocket.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -140,6 +157,43 @@ public class Node implements Runnable {
 			}
 		}
 
+	}
+	
+	public void moveKeys(int predecessor, int id) {
+		try {
+			Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(predecessor));
+			PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					sock.getInputStream()));
+
+			Message msg = new Message(Message.MOVE_KEY, predecessor, id);
+			out.println(msg.toString());
+
+			String resp = in.readLine();
+			String[] keyString = resp.split(" ");
+			if(!isParsable(keyString[0]))
+				moveKeys(0, myId);
+			else {
+				for(String k : keyString)
+					this.keys.add(Integer.valueOf(k));
+			}
+			sock.close();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	public static boolean isParsable(String input) {
+		boolean parsable = true;
+		try {
+			Integer.parseInt(input);
+		} catch(NumberFormatException e) {
+			parsable = false;
+		}
+		return parsable;
 	}
 
 	public void initFingers(int nPrime) {
@@ -330,7 +384,7 @@ public class Node implements Runnable {
 			}
 		}
 		
-	}
+	} 
 	
 	public int getSuccessor(int n) {
 		if(n == myId)
@@ -403,6 +457,23 @@ public class Node implements Runnable {
 		
 	}
 
+	public int getId() {
+		return this.myId;
+	}
+	
+	public String sendKeys() {
+		String keyString = "";
+		for(int i : this.keys) {
+			keyString += i + " ";
+		}
+		return keyString;
+	}
+	
+	public int fingerLength() {
+		int p = FINGER_LENGTH;
+		return p;
+	}
+	
 	/**
 	 * i0 < id < i1
 	 * @param interval
