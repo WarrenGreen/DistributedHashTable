@@ -104,11 +104,11 @@ public class Manager {
 				Node temp = nodes[p];
 				
 				nodes[temp.fingers.get(0).getSuccessor()].pred = temp.pred; //Update successor predecessor
-				
+				int count = 0;
 				for(int i =nodes.length-1; i>=0;i--) {
 					if(nodes[i] != null && containsNode(nodes[i], p)) {
-						System.out.println(nodes[p]);
-						nodes[p].removeNode(i, p, temp.fingers.get(0).getSuccessor());
+						nodes[p].removeNode(i, p, temp.fingers.get(0).getSuccessor(), count);
+						count++;
 //						try {
 //							System.out.println("remove from " + getNodeAddress(i));
 //							Socket sock = new Socket(Manager.HOST, getNodeAddress(i));

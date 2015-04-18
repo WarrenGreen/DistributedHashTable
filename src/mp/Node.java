@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -132,7 +133,7 @@ public class Node implements Runnable {
 								msg.getId());
 					}
 				} else if (msg.getType() == Message.REMOVE_NODE) {
-					int nPrime = msg.getNPrime();
+					int nPrime = msg.getNPrime();			
 					if (msg.getId() != myId && msg.getN() == myId) {
 
 						for (int i = 0; i < Node.FINGER_LENGTH; i++) {
@@ -165,16 +166,8 @@ public class Node implements Runnable {
 					}
 				}
 				else if(msg.getType() == Message.MOVE_KEY_DELETE) {
-//					String[] k = msg.getKey().split(" ");
-//					System.out.println(msg.getKey());
-//					System.out.println("Successor: " + myId);
-//					System.out.println(k.length);
-//					for(int i = 0; i < k.length; i++) {
-//						System.out.println(k[i]);
-//						this.keys.add(Integer.parseInt(k[i]));
-//					}
-					if(msg.getKey() != null)
-						this.keys.addAll(msg.getKey());
+					this.keys.addAll(msg.getKey());
+					Collections.sort(this.keys);
 				}
 
 				clientSocket.close();
@@ -356,9 +349,10 @@ public class Node implements Runnable {
 		}
 	}
 
-	public void removeNode(int n, int id, int nPrime) {
+	public void removeNode(int n, int id, int nPrime, int count) {
 		if (n != myId) {
-			moveKeysDelete(id, nPrime);
+			if(count == 0)
+				moveKeysDelete(id, nPrime);
 			try {
 				int addr;
 				if((addr = mngr.getNodeAddress(n)) == -1) return;
@@ -383,12 +377,8 @@ public class Node implements Runnable {
 				BufferedReader in = new BufferedReader(new InputStreamReader(
 						sock.getInputStream()));
 				
-				String keyString = "";
-				for(int i = 0; i < this.keys.size(); i++) {
-					keyString += this.keys.get(i) + " ";
-				}
 				Message msg = new Message(Message.MOVE_KEY_DELETE, successor, id, 0, this.keys);
-				out.println(msg);
+				out.println(msg.toString());
 
 				sock.close();
 	

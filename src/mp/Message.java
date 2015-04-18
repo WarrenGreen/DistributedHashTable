@@ -70,9 +70,12 @@ public class Message {
 		}
 		
 		if(pInput.length > 4) {
-			//this.keyString = pInput[4];
+			List<Integer> k = new ArrayList<Integer>();
+			for(int i = 4; i < pInput.length; i++) {
+				k.add(Integer.parseInt(pInput[i]));
+			}
+			this.keyString = k;
 		}
-		System.out.println("I AM HERE");
 	}
 	
 	public String toString() {
@@ -82,9 +85,9 @@ public class Message {
 			out += " " + nPrime;
 		
 		if(keyString != null)
-			out += " " + keyString;
-		System.out.println("wut " + out);
-		System.out.println("Keystring: " + keyString);
+			for(int i = 0; i < keyString.size(); i++) {
+				out += " " + keyString.get(i);
+			}
 		return out;
 	}
 
