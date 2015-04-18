@@ -1,4 +1,5 @@
 package mp;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,12 +17,13 @@ public class Node implements Runnable {
 
 	private int myId;
 	public List<Finger> fingers;
-	private int pred; // predecessor
+	public int pred; // predecessor
 	private List<Integer> keys;
 	private AtomicBoolean running;
 	private Manager mngr;
+	private Socket clientSocket;
 
-	private static final int FINGER_LENGTH = 4;
+	public static final int FINGER_LENGTH = 4;
 
 	private ServerSocket serverSocket;
 
@@ -70,17 +72,19 @@ public class Node implements Runnable {
 			Finger f = new Finger(start, new int[] { start, nStart });
 			fingers.add(f);
 		}
-		
+
 		pred = -1;
+
 		this.mngr = mngr;
 		running = new AtomicBoolean();
 		running.set(true);
 
 		bind(port);
-		
+
 		initFingers(nPrime);
 		updateOthers(myId);
 		moveKeys(pred, myId);
+
 	}
 
 	@Override
@@ -89,7 +93,7 @@ public class Node implements Runnable {
 
 			String input = null;
 			try {
-				Socket clientSocket = serverSocket.accept();
+				clientSocket = serverSocket.accept();
 				PrintWriter out = new PrintWriter(
 						clientSocket.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -101,40 +105,48 @@ public class Node implements Runnable {
 
 				if (msg.getType() == Message.FIND_SUCCESSOR) {
 					out.println(findSuccessor(myId, msg.getId()));
-				} else if(msg.getType() == Message.GET_SUCCESSOR) {
+				} else if (msg.getType() == Message.GET_SUCCESSOR) {
 					out.println(getSuccessor(msg.getN()));
-				}else if(msg.getType() == Message.GET_PREDECESSOR) {
+				} else if (msg.getType() == Message.GET_PREDECESSOR) {
 					out.println(getPredecessor(msg.getN()));
-				} else if(msg.getType() == Message.SET_PREDECESSOR) {
+				} else if (msg.getType() == Message.SET_PREDECESSOR) {
 					setPredecessor(msg.getN(), msg.getId());
-				} else if(msg.getType() == Message.CLOSEST_PRECEDING) {
+				} else if (msg.getType() == Message.CLOSEST_PRECEDING) {
 					out.println(closestPrecedingFinger(msg.getN(), msg.getId()));
-				} else if(msg.getType() == Message.UPDATE_FINGERS) {
-					updateFingers(msg.getN(), msg.getId(), msg.getIndex());
-				} else if(msg.getType() == Message.UPDATE_OTHERS) {
-					//updateOthers(msg.getN());
-				}else if(msg.getType() == Message.UPDATE_SUCCESSOR) {
-					if(msg.getN() == myId && msg.getN() != msg.getId()){
-						for(int i=0;i<Node.FINGER_LENGTH;i++) {
-							if(inBetweenBB(new int[]{fingers.get(i).getStart(), fingers.get(i).getSuccessor()}, msg.getId())){
+				} else if (msg.getType() == Message.UPDATE_FINGERS) {
+					updateFingers(msg.getN(), msg.getId(), msg.getNPrime());
+				} else if (msg.getType() == Message.UPDATE_SUCCESSOR) {
+					if (msg.getN() == myId && msg.getN() != msg.getId()) {
+						for (int i = 0; i < Node.FINGER_LENGTH; i++) {
+							if (inBetweenBB(new int[] {
+									fingers.get(i).getStart(),
+									fingers.get(i).getSuccessor() },
+									msg.getId())) {
 								fingers.get(i).setSuccessor(msg.getId());
 							}
-							updateSuccessor(fingers.get(i).getStart(), msg.getId());
+							updateSuccessor(fingers.get(i).getStart(),
+									msg.getId());
+
+						}
+						updateSuccessor(fingers.get(0).getSuccessor(),
+								msg.getId());
+					}
+				} else if (msg.getType() == Message.REMOVE_NODE) {
+					int nPrime = msg.getNPrime();
+					if (msg.getId() != myId && msg.getN() == myId) {
+
+						for (int i = 0; i < Node.FINGER_LENGTH; i++) {
+							if (fingers.get(i).getSuccessor() == msg.getId()) {
+								fingers.get(i).setSuccessor(msg.getNPrime());
+							}
 							
 						}
-						updateSuccessor(fingers.get(0).getSuccessor(), msg.getId());
+
+						if(pred == msg.getId())
+							pred = findPredecessor(getSuccessor(msg.getNPrime()), msg.getN());
+						
 					}
-				}
-				else if(msg.getType() == Message.UPDATE_PREDECESSOR) {
-					if(msg.getN() == myId){
-						for(int i=0;i<Node.FINGER_LENGTH;i++) {
-							if(inBetweenPB(new int[]{myId, msg.getId()}, fingers.get(i).getStart())){
-								fingers.get(i).setSuccessor(msg.getId());
-							}
-						}
-					}
-				}
-				else if(msg.getType() == Message.MOVE_KEY) {
+				}else if(msg.getType() == Message.MOVE_KEY) {
 					if(msg.getN() == myId) {
 						Iterator<Integer> iter = this.keys.iterator();
 						String keysToSend = "";
@@ -148,10 +160,10 @@ public class Node implements Runnable {
 						out.println(keysToSend);
 					}
 				}
+
 				clientSocket.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// e.printStackTrace();
 			}
 		}
 
@@ -199,35 +211,39 @@ public class Node implements Runnable {
 	}
 
 	public void initFingers(int nPrime) {
-		fingers.get(0).setSuccessor(findSuccessor(nPrime, fingers.get(0).getStart()));
+		fingers.get(0).setSuccessor(
+				findSuccessor(nPrime, fingers.get(0).getStart()));
 		pred = getPredecessor(fingers.get(0).getSuccessor());
 		setPredecessor(fingers.get(0).getSuccessor(), myId);
-		
-		
-		for(int i=0;i<Node.FINGER_LENGTH-1; i++) {
+
+		for (int i = 0; i < Node.FINGER_LENGTH - 1; i++) {
 			int a = myId;
 			int b = fingers.get(i).getSuccessor();
-			int c = fingers.get(i+1).getStart();
-			if(inBetweenBP(new int[]{a, b}, c)) {
-				fingers.get(i+1).setSuccessor(fingers.get(i).getSuccessor());
+			int c = fingers.get(i + 1).getStart();
+			if (inBetweenBP(new int[] { a, b }, c)) {
+				fingers.get(i + 1).setSuccessor(fingers.get(i).getSuccessor());
 			} else {
-				fingers.get(i+1).setSuccessor(findSuccessor(nPrime, fingers.get(i+1).getStart()));
+				fingers.get(i + 1).setSuccessor(
+						findSuccessor(nPrime, fingers.get(i + 1).getStart()));
 			}
 		}
 	}
 
 	public int findSuccessor(int n, int id) {
-		if( n == myId) {
-			if(inBetweenPB(new int[]{n, getSuccessor(n)}, id))
+		if (n == myId) {
+			if (inBetweenPB(new int[] { n, getSuccessor(n) }, id))
 				return getSuccessor(n);
-			
-			if(n==id)
+
+			if (n == id)
 				return n;
-						
+
 			return findSuccessor(getSuccessor(n), id);
 		} else {
 			try {
-				Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(n));
+				int addr;
+				
+				if((addr= mngr.getNodeAddress(n)) == -1) return -1;
+				Socket sock = new Socket(Manager.HOST, addr);
 				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(
 						sock.getInputStream()));
@@ -243,7 +259,7 @@ public class Node implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		
+
 		return -1;
 
 	}
@@ -251,13 +267,14 @@ public class Node implements Runnable {
 	public int findPredecessor(int n, int id) {
 		int nPrime = n;
 		int succ = getSuccessor(nPrime);
-		while(!inBetweenPB(new int[]{nPrime, succ}, id)) {
+		while (!inBetweenPB(new int[] { nPrime, succ }, id)) {
 			nPrime = closestPrecedingFinger(nPrime, id);
 		}
-		
+
 		return nPrime;
+
 	}
-	
+
 	/**
 	 * Closest finger preceding id
 	 * 
@@ -269,7 +286,7 @@ public class Node implements Runnable {
 		if (n == myId) {
 			for (int i = Node.FINGER_LENGTH - 1; i >= 0; i--) {
 				int s = fingers.get(i).getSuccessor();
-				if (inBetweenBP(new int[] {n, id}, s) && s!= id)
+				if (inBetweenBP(new int[] { n, id }, s) && s != id)
 					return fingers.get(i).getSuccessor();
 			}
 		} else {
@@ -293,68 +310,26 @@ public class Node implements Runnable {
 
 		return myId;
 	}
-	
+
 	public void updateOthers(int n) {
-		if(n == myId) {
+		if (n == myId) {
 			updateSuccessor(getSuccessor(n), n);
-			//updatePredecessor(pred, n);
-			/*for(int i=0;i<Node.FINGER_LENGTH; i++) {
-				//int pPrime = Math.abs((int) (n - Math.pow(2, i)));// % Math.pow(2, Node.FINGER_LENGTH)));
-				//int p = findPredecessor(n, pPrime);
-				//if(p == myId) continue;
-				//updateFingers(p, n, i);
-			}*/
-//			for(int i = 0; i < Node.FINGER_LENGTH; i++) {
-//				int p = findPredecessor(n, (int)(n - Math.pow(2, i - 1)));
-//				updateFingers(p, n, i);
-//			}
-		} else {
-			try {
-				Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(n));
-				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
-				BufferedReader in = new BufferedReader(new InputStreamReader(
-						sock.getInputStream()));
-
-				Message msg = new Message(Message.UPDATE_OTHERS, n);
-				out.println(msg.toString());
-
-				sock.close();
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
-		
+
 	}
-	
+
 	public void updateSuccessor(int n, int id) {
 		try {
-				int addr;
-				
-				if((addr = mngr.getNodeAddress(n)) == -1) return;
-				Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(n));
-				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
-				BufferedReader in = new BufferedReader(new InputStreamReader(
-						sock.getInputStream()));
+			int addr;
 
-				Message msg = new Message(Message.UPDATE_SUCCESSOR, n, id);
-				out.println(msg.toString());
-
-				sock.close();
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-	}
-	
-	public void updatePredecessor(int n, int id) {
-		try {
+			if ((addr = mngr.getNodeAddress(n)) == -1)
+				return;
 			Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(n));
 			PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					sock.getInputStream()));
 
-			Message msg = new Message(Message.UPDATE_PREDECESSOR, n, id);
+			Message msg = new Message(Message.UPDATE_SUCCESSOR, n, id);
 			out.println(msg.toString());
 
 			sock.close();
@@ -363,13 +338,33 @@ public class Node implements Runnable {
 			e.printStackTrace();
 		}
 	}
-	
+
+	public void removeNode(int n, int id, int nPrime) {
+		if (n != myId) {
+			try {
+				int addr;
+				
+				if((addr = mngr.getNodeAddress(n)) == -1) return;
+				Socket sock = new Socket(Manager.HOST, addr);
+				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
+
+				Message msg = new Message(Message.REMOVE_NODE, n, id, nPrime);
+				out.println(msg.toString());
+
+				sock.close();
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	public void updateFingers(int n, int s, int i) {
-		if( n == myId) {
-			if(inBetweenBP(new int[]{n, fingers.get(i).getSuccessor()}, s)) {
+		if (n == myId) {
+			if (inBetweenBP(new int[] { n, fingers.get(i).getSuccessor() }, s)) {
 				fingers.get(i).setSuccessor(s);
-				int p = pred;
-				if(p != s)
+				int p = findPredecessor(myId, myId);
+				if (p != s)
 					updateFingers(p, s, i);
 			}
 		} else {
@@ -388,13 +383,12 @@ public class Node implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		
 	} 
-	
+
 	public int getSuccessor(int n) {
-		if(n == myId)
+		if (n == myId)
 			return fingers.get(0).getSuccessor();
-		
+
 		try {
 			Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(n));
 			PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
@@ -411,14 +405,14 @@ public class Node implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return n;
 	}
-	
+
 	public int getPredecessor(int n) {
-		if(n == myId)
+		if (n == myId)
 			return pred;
-		
+
 		try {
 			int p = mngr.getNodeAddress(n);
 			Socket sock = new Socket(Manager.HOST, p);
@@ -436,12 +430,12 @@ public class Node implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return n;
 	}
-	
+
 	public void setPredecessor(int n, int id) {
-		if(n == myId)
+		if (n == myId)
 			pred = id;
 		else {
 			try {
@@ -459,7 +453,7 @@ public class Node implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
 
 	public int getId() {
@@ -481,51 +475,53 @@ public class Node implements Runnable {
 	
 	/**
 	 * i0 < id < i1
+	 * 
 	 * @param interval
 	 * @param id
 	 * @return
 	 */
 	private boolean inBetween(int[] interval, int id) {
-		if(interval[0] > interval[1])
+		if (interval[0] > interval[1])
 			return (interval[0] < id || id < interval[1]);
 		return (interval[0] < id && id < interval[1]);
-		
+
 	}
-	
+
 	/**
 	 * i0 <= id < i1
+	 * 
 	 * @param interval
 	 * @param id
 	 * @return
 	 */
 	private boolean inBetweenBP(int[] interval, int id) {
-		//if(interval[0] == interval[1]) return true;
-		if(interval[0] >= interval[1])
+		// if(interval[0] == interval[1]) return true;
+		if (interval[0] >= interval[1])
 			return (interval[0] <= id || id < interval[1]);
 		return (interval[0] <= id && id < interval[1]);
 
 	}
-	
+
 	/**
 	 * i0 < id <= i1
+	 * 
 	 * @param interval
 	 * @param id
 	 * @return
 	 */
 	private boolean inBetweenPB(int[] interval, int id) {
-		//if(interval[0] == interval[1]) return true;
-		if(interval[0] >= interval[1])
+		// if(interval[0] == interval[1]) return true;
+		if (interval[0] >= interval[1])
 			return (interval[0] < id || id <= interval[1]);
 		return (interval[0] < id && id <= interval[1]);
 
 	}
-	
+
 	private boolean inBetweenBB(int[] interval, int id) {
-		//if(interval[0] == interval[1]) return true;
-		if(interval[0] > interval[1])
+		// if(interval[0] == interval[1]) return true;
+		if (interval[0] > interval[1])
 			return (interval[0] <= id || id <= interval[1]);
 		return (interval[0] <= id && id <= interval[1]);
-
 
 	}
 
@@ -540,6 +536,11 @@ public class Node implements Runnable {
 
 	public void stop() {
 		running.set(false);
-		;
+		try {
+			serverSocket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

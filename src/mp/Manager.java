@@ -1,4 +1,5 @@
 package mp;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -38,6 +39,32 @@ public class Manager {
 		return PORT + id;
 	}
 	
+	public boolean containsNode(Node node, int p) {
+		for(int i=0;i<Node.FINGER_LENGTH;i++) {
+			if(node.fingers.get(i).getSuccessor() == p)
+				return true;
+		}
+		
+		return false;
+	}
+	
+	private void output(String out) {
+		
+		if(logfile == null) {
+			System.out.println(out);
+		}else{ 
+			FileWriter f;
+			try {
+				f = new FileWriter(logfile, true);
+				f.write(out +"\n");
+				f.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public void start() {
 		addFirst();
 		
@@ -73,6 +100,38 @@ public class Manager {
 			} else if(input.startsWith("leave ")) { //Leave
 				if(nodes[p] == null) //p is not an active node
 					continue;
+				
+				Node temp = nodes[p];
+				nodes[p] = null;
+				
+				nodes[temp.fingers.get(0).getSuccessor()].pred = temp.pred; //Update successor predecessor
+				
+				for(int i =nodes.length-1; i>=0;i--) {
+					if(nodes[i] != null && containsNode(nodes[i], p)) {
+						try {
+							System.out.println("remove from " + getNodeAddress(i));
+							Socket sock = new Socket(Manager.HOST, getNodeAddress(i));
+							PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
+
+							Message msg = new Message(Message.REMOVE_NODE, i, p, temp.fingers.get(0).getSuccessor());
+							out.println(msg.toString());
+
+							sock.close();
+
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				
+				temp.stop();
+				try {
+					threads[p].join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 			} else if(input.startsWith("show ")) { //Show
 				if(nodes[p] == null) //p is not an active node
 					continue;
@@ -82,14 +141,12 @@ public class Manager {
 					System.out.println(f.getStart()+", " +f.getSuccessor());
 				}
 				
-				System.out.println("Keys: " + n.sendKeys());
-				System.out.println("pred: " + n.getPredecessor(p));
+				output("Node: "+p+" Keys: " + n.sendKeys());
 			} 
 			else if(input.startsWith("show-all")) {
 				for(Node n : nodes) {
 					if(n != null) {
-						System.out.print("Node: " + n.getId());
-						System.out.println(" Keys: " + n.sendKeys());
+						output("Node: " + n.getId() + " Keys: " + n.sendKeys());
 					}
 				}
 			}
@@ -108,14 +165,6 @@ public class Manager {
 			Node n = nodes[i];
 			if(n != null) {
 				n.stop();
-				try {
-					Socket sock = new Socket(Manager.HOST, getNodeAddress(i));
-					new PrintWriter(sock.getOutputStream(), true).println(Manager.STOP);
-					sock.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 			}
 		}
 		
@@ -140,6 +189,7 @@ public class Manager {
 			if(args[i].compareTo("-g") == 0)
 				logfile = args[i+1];
 		}
+
 		
 		Manager mngr = new Manager(logfile);
 		mngr.start();

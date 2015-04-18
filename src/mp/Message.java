@@ -9,16 +9,15 @@ public class Message {
 	public static final int GET_PREDECESSOR = 2;
 	public static final int SET_PREDECESSOR = 3;
 	public static final int CLOSEST_PRECEDING = 4;
-	public static final int UPDATE_OTHERS = 5;
 	public static final int UPDATE_FINGERS = 6;
 	public static final int UPDATE_SUCCESSOR = 7;
-	public static final int UPDATE_PREDECESSOR = 8;
+	public static final int REMOVE_NODE = 8;
 	public static final int MOVE_KEY = 9;
 	
 	private int type;
 	private int id;
 	private int n;
-	private int index = -1;
+	private int nPrime = -1;
 	
 	private List<Integer> path;
 	
@@ -41,11 +40,11 @@ public class Message {
 		this.id = id;
 	}
 	
-	public Message(int type, int n, int id, int index) {
+	public Message(int type, int n, int id, int nPrime) {
 		this.type = type;
 		this.n = n;
 		this.id = id;
-		this.index = index;
+		this.nPrime = nPrime;
 	}
 	
 	private void parseInput(String input) {
@@ -56,15 +55,15 @@ public class Message {
 		this.id = Integer.parseInt(pInput[2]);
 		
 		if(pInput.length > 3) {
-			this.index = Integer.parseInt(pInput[3]);
+			this.nPrime = Integer.parseInt(pInput[3]);
 		}
 	}
 	
 	public String toString() {
 		String out = type + " " + n + " " + id;
 		
-		if(index != -1)
-			out += " " + index;
+		if(nPrime != -1)
+			out += " " + nPrime;
 		
 		return out;
 	}
@@ -93,12 +92,12 @@ public class Message {
 		this.n = n;
 	}
 
-	public int getIndex() {
-		return index;
+	public int getNPrime() {
+		return nPrime;
 	}
 
-	public void setIndex(int index) {
-		this.index = index;
+	public void setNPrime(int nPrime) {
+		this.nPrime = nPrime;
 	}
 
 }
