@@ -141,7 +141,7 @@ public class Node implements Runnable {
 						String keysToSend = "";
 						while(iter.hasNext()) {
 							int k = iter.next();
-							if(inBetweenPB(new int[]{myId, msg.getId()}, k)) {//k > myId && k <= msg.getId()) {
+							if(inBetweenPB(new int[]{myId, msg.getId()}, k)) {
 								keysToSend += k + " ";
 								iter.remove();
 							}
@@ -160,7 +160,6 @@ public class Node implements Runnable {
 	
 	public void moveKeys(int predecessor, int id) {
 		try {
-			System.out.println(findSuccessor(id, fingers.get(0).getStart()));
 			Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(predecessor));
 			PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(
