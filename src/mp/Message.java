@@ -14,6 +14,7 @@ public class Message {
 	public static final int REMOVE_NODE = 8;
 	public static final int MOVE_KEY = 9;
 	public static final int MOVE_KEY_DELETE = 10;
+	public static final int FIND_KEY = 11;
 	
 	private int type;
 	private int id;

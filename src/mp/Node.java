@@ -169,6 +169,11 @@ public class Node implements Runnable {
 					this.keys.addAll(msg.getKey());
 					Collections.sort(this.keys);
 				}
+				
+				else if(msg.getType() == Message.FIND_KEY) {
+					int key = findKey(msg.getId(), msg.getN());
+					out.println(key);
+				}
 
 				clientSocket.close();
 			} catch (IOException e) {
@@ -220,6 +225,32 @@ public class Node implements Runnable {
 		return parsable;
 	}
 
+	public int findKey(int k, int id) {
+		int successor = fingers.get(0).getSuccessor();
+		if(inBetweenPB(new int[]{id, successor}, k)) {
+			return successor;
+		}
+		else {
+			try {
+				Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(successor));
+				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
+				BufferedReader in = new BufferedReader(new InputStreamReader(
+						sock.getInputStream()));
+
+				Message msg = new Message(Message.FIND_KEY, successor, k);
+				out.println(msg.toString());
+
+				String resp = in.readLine();
+				sock.close();
+
+				return Integer.parseInt(resp);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return -1;
+	}
+	
 	public void initFingers(int nPrime) {
 		fingers.get(0).setSuccessor(
 				findSuccessor(nPrime, fingers.get(0).getStart()));

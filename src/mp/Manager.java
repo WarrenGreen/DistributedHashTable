@@ -95,8 +95,8 @@ public class Manager {
 					continue;
 				
 				int k = Integer.parseInt(pInput[2]);
-				
-				
+				int result = nodes[p].findKey(k, p);
+				System.out.println("The node " + result + " has the key " + k);
 			} else if(input.startsWith("leave ")) { //Leave
 				if(nodes[p] == null) //p is not an active node
 					continue;
