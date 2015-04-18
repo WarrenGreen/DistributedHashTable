@@ -72,7 +72,6 @@ public class Node implements Runnable {
 		}
 		
 		pred = -1;
-
 		this.mngr = mngr;
 		running = new AtomicBoolean();
 		running.set(true);
@@ -257,9 +256,8 @@ public class Node implements Runnable {
 		}
 		
 		return nPrime;
-			
 	}
-
+	
 	/**
 	 * Closest finger preceding id
 	 * 
@@ -306,6 +304,10 @@ public class Node implements Runnable {
 				//if(p == myId) continue;
 				//updateFingers(p, n, i);
 			}*/
+//			for(int i = 0; i < Node.FINGER_LENGTH; i++) {
+//				int p = findPredecessor(n, (int)(n - Math.pow(2, i - 1)));
+//				updateFingers(p, n, i);
+//			}
 		} else {
 			try {
 				Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(n));
@@ -366,7 +368,7 @@ public class Node implements Runnable {
 		if( n == myId) {
 			if(inBetweenBP(new int[]{n, fingers.get(i).getSuccessor()}, s)) {
 				fingers.get(i).setSuccessor(s);
-				int p = findPredecessor(myId, myId);
+				int p = pred;
 				if(p != s)
 					updateFingers(p, s, i);
 			}
