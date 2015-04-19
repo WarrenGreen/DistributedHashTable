@@ -72,7 +72,6 @@ public class Manager {
 		String input;
 		while((input = in.nextLine()).compareTo("exit") != 0) {
 			if(input.compareTo("show all") == 0) { //Show all
-				
 				continue;
 			}
 			

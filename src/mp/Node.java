@@ -24,6 +24,9 @@ public class Node implements Runnable {
 	private Manager mngr;
 	private Socket clientSocket;
 
+	public int countInsert;
+	public int countFind;
+	
 	public static final int FINGER_LENGTH = 8;
 
 	private ServerSocket serverSocket;
@@ -182,6 +185,14 @@ public class Node implements Runnable {
 
 	}
 	
+	public int getInsertMessageCount() {
+		return countInsert;
+	}
+	
+	public int getFindMessageCount() {
+		return countFind;
+	}
+	
 	public void moveKeys(int predecessor, int id) {
 		if(predecessor != myId)
 			try {
@@ -205,12 +216,12 @@ public class Node implements Runnable {
 				else{
 					moveKeys(findSuccessor(id, fingers.get(0).getStart()), id);
 				}
+				countInsert = msg.getCount();
 				sock.close();
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 		
 	}
 	
@@ -241,7 +252,7 @@ public class Node implements Runnable {
 
 				String resp = in.readLine();
 				sock.close();
-
+				countFind = msg.getCount() - countInsert;
 				return Integer.parseInt(resp);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -252,7 +263,7 @@ public class Node implements Runnable {
 	
 	public void initFingers(int nPrime) {
 		fingers.get(0).setSuccessor(
-				findSuccessor(nPrime, fingers.get(0).getStart()));
+		findSuccessor(nPrime, fingers.get(0).getStart()));
 		pred = getPredecessor(fingers.get(0).getSuccessor());
 		setPredecessor(fingers.get(0).getSuccessor(), myId);
 
