@@ -24,7 +24,7 @@ public class Node implements Runnable {
 	private Manager mngr;
 	private Socket clientSocket;
 
-	public static final int FINGER_LENGTH = 4;
+	public static final int FINGER_LENGTH = 8;
 
 	private ServerSocket serverSocket;
 
@@ -85,7 +85,6 @@ public class Node implements Runnable {
 		initFingers(nPrime);
 		updateOthers(myId);
 		moveKeys(pred, myId);
-
 	}
 
 	@Override

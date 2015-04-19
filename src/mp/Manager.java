@@ -138,16 +138,16 @@ public class Manager {
 					continue;
 				
 				Node n = nodes[p];
-				for(Finger f: n.fingers) {
-					System.out.println(f.getStart()+", " +f.getSuccessor());
-				}
+//				for(Finger f: n.fingers) {
+//					System.out.println(f.getStart()+", " +f.getSuccessor());
+//				}
 				
-				output("Node: "+p+" Keys: " + n.sendKeys());
+				output(p + " " + n.sendKeys());
 			} 
 			else if(input.startsWith("show-all")) {
 				for(Node n : nodes) {
 					if(n != null) {
-						output("Node: " + n.getId() + " Keys: " + n.sendKeys());
+						output(n.getId() + " " + n.sendKeys());
 					}
 				}
 			}
