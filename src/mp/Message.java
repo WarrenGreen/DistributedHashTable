@@ -16,8 +16,6 @@ public class Message {
 	public static final int MOVE_KEY_DELETE = 10;
 	public static final int FIND_KEY = 11;
 	
-	public int count = 0;
-	
 	private int type;
 	private int id;
 	private int n;
@@ -38,14 +36,12 @@ public class Message {
 	public Message(int type, int n) {
 		this.type = type;
 		this.n = n;
-		count++;
 	}
 	
 	public Message(int type, int n, int id) {
 		this.type = type;
 		this.n = n;
 		this.id = id;
-		count++;
 	}
 	
 	public Message(int type, int n, int id, int nPrime) {
@@ -53,7 +49,6 @@ public class Message {
 		this.n = n;
 		this.id = id;
 		this.nPrime = nPrime;
-		count++;
 	}
 	
 	public Message(int type, int n, int id, int filler, List<Integer> keyString) {
@@ -62,7 +57,6 @@ public class Message {
 		this.id = id;
 		this.nPrime = filler;
 		this.keyString = keyString;
-		count++;
 	}
 	
 	private void parseInput(String input) {
@@ -133,9 +127,4 @@ public class Message {
 	public void setNPrime(int nPrime) {
 		this.nPrime = nPrime;
 	}
-	
-	public int getCount() {
-		return count;
-	}
-
 }

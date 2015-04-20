@@ -24,7 +24,7 @@ public class Node implements Runnable {
 	private Manager mngr;
 	private Socket clientSocket;
 
-	public int countInsert;
+	public int countJoin;
 	public int countFind;
 	
 	public static final int FINGER_LENGTH = 8;
@@ -185,8 +185,8 @@ public class Node implements Runnable {
 
 	}
 	
-	public int getInsertMessageCount() {
-		return countInsert;
+	public int getJoinMessageCount() {
+		return countJoin;
 	}
 	
 	public int getFindMessageCount() {
@@ -196,6 +196,7 @@ public class Node implements Runnable {
 	public void moveKeys(int predecessor, int id) {
 		if(predecessor != myId)
 			try {
+				countJoin++;
 				Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(predecessor));
 				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -216,7 +217,6 @@ public class Node implements Runnable {
 				else{
 					moveKeys(findSuccessor(id, fingers.get(0).getStart()), id);
 				}
-				countInsert = msg.getCount();
 				sock.close();
 
 		} catch (IOException e) {
@@ -242,6 +242,7 @@ public class Node implements Runnable {
 		}
 		else {
 			try {
+				countFind++;
 				Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(successor));
 				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -252,7 +253,6 @@ public class Node implements Runnable {
 
 				String resp = in.readLine();
 				sock.close();
-				countFind = msg.getCount() - countInsert;
 				return Integer.parseInt(resp);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -262,8 +262,7 @@ public class Node implements Runnable {
 	}
 	
 	public void initFingers(int nPrime) {
-		fingers.get(0).setSuccessor(
-		findSuccessor(nPrime, fingers.get(0).getStart()));
+		fingers.get(0).setSuccessor(findSuccessor(nPrime, fingers.get(0).getStart()));
 		pred = getPredecessor(fingers.get(0).getSuccessor());
 		setPredecessor(fingers.get(0).getSuccessor(), myId);
 
@@ -292,7 +291,7 @@ public class Node implements Runnable {
 		} else {
 			try {
 				int addr;
-				
+				countJoin++;
 				if((addr= mngr.getNodeAddress(n)) == -1) return -1;
 				Socket sock = new Socket(Manager.HOST, addr);
 				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
@@ -371,6 +370,7 @@ public class Node implements Runnable {
 
 	public void updateSuccessor(int n, int id) {
 		try {
+			countJoin++;
 			int addr;
 
 			if ((addr = mngr.getNodeAddress(n)) == -1)
@@ -460,6 +460,7 @@ public class Node implements Runnable {
 			return fingers.get(0).getSuccessor();
 
 		try {
+			countJoin++;
 			Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(n));
 			PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -484,6 +485,7 @@ public class Node implements Runnable {
 			return pred;
 
 		try {
+			countJoin++;
 			int p = mngr.getNodeAddress(n);
 			Socket sock = new Socket(Manager.HOST, p);
 			PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
@@ -509,6 +511,7 @@ public class Node implements Runnable {
 			pred = id;
 		else {
 			try {
+				countJoin++;
 				Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(n));
 				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(
