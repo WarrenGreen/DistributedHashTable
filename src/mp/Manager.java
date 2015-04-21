@@ -35,6 +35,7 @@ public class Manager {
 	}
 	
 	public int getNodeAddress(int id) {
+		if(id > Math.pow(2, Node.FINGER_LENGTH)-1) id = (id % ((int)Math.pow(2, Node.FINGER_LENGTH)-1));
 		if(nodes[id] == null) return -1;
 		return PORT + id;
 	}
@@ -70,6 +71,7 @@ public class Manager {
 		
 		Scanner in = new Scanner(System.in);
 		String input;
+		System.out.println("Enter command: ");
 		while((input = in.nextLine()).compareTo("exit") != 0) {
 			if(input.compareTo("show all") == 0) { //Show all
 				continue;
@@ -108,19 +110,7 @@ public class Manager {
 					if(nodes[i] != null && containsNode(nodes[i], p)) {
 						nodes[p].removeNode(i, p, temp.fingers.get(0).getSuccessor(), count);
 						count++;
-//						try {
-//							System.out.println("remove from " + getNodeAddress(i));
-//							Socket sock = new Socket(Manager.HOST, getNodeAddress(i));
-//							PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
-//
-//							Message msg = new Message(Message.REMOVE_NODE, i, p, temp.fingers.get(0).getSuccessor());
-//							out.println(msg.toString());
-//
-//							sock.close();
-//
-//						} catch (IOException e) {
-//							e.printStackTrace();
-//						}
+
 					}
 				}
 				nodes[p] = null;
@@ -137,9 +127,6 @@ public class Manager {
 					continue;
 				
 				Node n = nodes[p];
-//				for(Finger f: n.fingers) {
-//					System.out.println(f.getStart()+", " +f.getSuccessor());
-//				}
 				
 				output(p + " " + n.sendKeys());
 			} 
@@ -154,7 +141,27 @@ public class Manager {
 			else {
 				System.out.println("Invalid Command.");
 			}
+			
+			/*try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
+			
+			System.out.println("Enter command: ");
 		}
+		
+		int totalFind = 0;
+		int totalJoin = 0;
+		for(Node n: nodes) {
+			if(n==null) continue;
+			totalFind += n.getFindMessageCount();
+			totalJoin += n.getJoinMessageCount();
+		}
+		
+		System.out.println("Total Find: "+totalFind);
+		System.out.println("Total Join: " + totalJoin);
 		
 		stop();
 		

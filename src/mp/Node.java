@@ -4,15 +4,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Node implements Runnable {
 
@@ -127,13 +127,12 @@ public class Node implements Runnable {
 									msg.getId())) {
 								fingers.get(i).setSuccessor(msg.getId());
 							}
-							updateSuccessor(fingers.get(i).getStart(),
-									msg.getId());
+							//updateSuccessor(fingers.get(i).getStart(),msg.getId());
 
 						}
-						updateSuccessor(fingers.get(0).getSuccessor(),
-								msg.getId());
+						updateSuccessor(fingers.get(0).getSuccessor(),msg.getId());
 					}
+					
 				} else if (msg.getType() == Message.REMOVE_NODE) {
 					int nPrime = msg.getNPrime();			
 					if (msg.getId() != myId && msg.getN() == myId) {
@@ -153,6 +152,7 @@ public class Node implements Runnable {
 						}
 						
 					}
+					
 				}else if(msg.getType() == Message.MOVE_KEY) {
 					if(msg.getN() == myId) {
 						Iterator<Integer> iter = this.keys.iterator();
@@ -177,6 +177,7 @@ public class Node implements Runnable {
 					out.println(key);
 				}
 
+				out.println("END");
 				clientSocket.close();
 			} catch (IOException e) {
 				// e.printStackTrace();
@@ -370,12 +371,20 @@ public class Node implements Runnable {
 
 	public void updateSuccessor(int n, int id) {
 		try {
+			//System.out.println("update: "+n+" : "+id);
 			countJoin++;
 			int addr;
 
-			if ((addr = mngr.getNodeAddress(n)) == -1)
+			/*if(inBetween(new int[]{myId, n}, id)){
+				//System.out.println("hit");
 				return;
-			Socket sock = new Socket(Manager.HOST, mngr.getNodeAddress(n));
+			}*/
+			
+			if ((n == id) || (addr = mngr.getNodeAddress(n)) == -1)
+				return;
+			Socket sock = new Socket();//(Manager.HOST, mngr.getNodeAddress(n));
+			SocketAddress sa = new InetSocketAddress(Manager.HOST, addr);
+			sock.connect(sa, 0);
 			PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					sock.getInputStream()));
@@ -383,6 +392,8 @@ public class Node implements Runnable {
 			Message msg = new Message(Message.UPDATE_SUCCESSOR, n, id);
 			out.println(msg.toString());
 
+			//in.readLine();
+			
 			sock.close();
 
 		} catch (IOException e) {
@@ -399,10 +410,11 @@ public class Node implements Runnable {
 				if((addr = mngr.getNodeAddress(n)) == -1) return;
 				Socket sock = new Socket(Manager.HOST, addr);
 				PrintWriter out = new PrintWriter(sock.getOutputStream(), true);
-
+				BufferedReader in = new BufferedReader(new InputStreamReader(
+						sock.getInputStream()));
 				Message msg = new Message(Message.REMOVE_NODE, n, id, nPrime);
 				out.println(msg.toString());
-
+				in.readLine();
 				sock.close();
 
 			} catch (IOException e) {
@@ -420,7 +432,7 @@ public class Node implements Runnable {
 				
 				Message msg = new Message(Message.MOVE_KEY_DELETE, successor, id, 0, this.keys);
 				out.println(msg.toString());
-
+				in.readLine();
 				sock.close();
 	
 			} catch (IOException e) {
